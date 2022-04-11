@@ -17,13 +17,31 @@ editor_options:
   preview: viewer
 ---
 
+# Directory
+
+Set up a directory (folder) where you are going to be working for the practical.
+For example, I have a "bio224" folder in my desktop.
 
 # Downloading the data
 
-Download the Jasper Ridge Data: "JR_herbarium.csv" and "JR_observations-218315.csv"
+Download the repository containing this file and data with the command below or simply go to the website and download it directly: https://github.com/MoisesExpositoAlonso/plantclimatelabgit .
 
-Download the Google Drive transect data as a .csv.
+```{bash, eval=FALSE}
+# SUBSTITUTE THE PATH BELOW FOR YOUR WORKING DIRECTORY
+git clone https://github.com/MoisesExpositoAlonso/plantclimatelabgit path/to/the/working/directory
+```
 
+(Github is a website where people can share repositories [folders] with code and some small datasets. It uses in the background a version control software "Git")
+
+There you will find several datasets in this folder:
+
+JR_herbarium.csv
+JR_observations-218315.csv
+
+We will also analyze the dataset we colected. Download the Google Drive transect data as a .csv into the same directory. 
+
+The link is here:
+https://docs.google.com/spreadsheets/d/1KhbNickXnH1gBP5F5XuOygm3fSbEx61fA-oCS_aeb7A/edit?usp=sharing
 To get both files:
 In Google Drive go to each of the tabs (redwood and grassland) and go to
 File -> Download -> Comma Separated Values (.csv). Do it for each
@@ -34,17 +52,19 @@ You should now have 4 files:
 - "JR_herbarium.csv"
 - "JR_observations-218315.csv"
 
+Note the "Module1-transects - redwood.csv" and "Module1-transects - grasslands.csv" may not be updated with all the data from the transects, so go to the google drive link and re-download it.
 
-Make a folder in your computer that contains all of these files and
-MODULE1_TUTORIAL.Rmd
+The folder also contains THIS template called "MODULE1_TUTORIAL.Rmd", which you can use to do the exercises of this practical.
 
 # Dependencies
 
-Set a working directory (the folder that contains the code and the data). This is so R knows where your data is
+The exercises in this practical requires some R packages with functions for biodiversity metrics.
+
+First set a working directory (the folder that contains the code and the data). This is so R knows where your data is
 
 Install and load packages (libraries of code) that we need for the analyses
 
-```{r load libraries}
+```{r load libraries, warning=FALSE}
 
 # SUBSTITUTE THIS FOR PATH TO FOLDER WITH DATA:
 # working_directory = "path/to/the/working/directory"
@@ -64,8 +84,8 @@ library(sars)
 
 ```{r load practical data}
 
-redwood_transect = read.csv("Module1-transects - transect1.csv")
-grassland_transect = read.csv("Module1-transects - transect2.csv")
+redwood_transect = read.csv("Module1-transects - redwood.csv")
+grassland_transect = read.csv("Module1-transects - grassland.csv")
 
 ```
 
@@ -104,6 +124,13 @@ Open the iNaturalist data from Jasper Ridge. What information in this sheet do y
 Describe how to make this curve using the Jasper Ridge Data if you were to draw it out:
 
 
+```{r}
+# The unique number of species names
+length(unique(JR_data_quality$scientific_name))
+
+```
+
+
 
 ```{r}
 sheet_size = nrow(JR_data_quality)
@@ -136,10 +163,17 @@ for(observation in 1:sheet_size) {
 
 plot(n_species_overEffort, ylab="Number of Species",xlab="Effort (Number of Observations)")
 
+# Fit a quadratic model to this
+datafit<-data.frame(y=n_species_overEffort, x=1:length(n_species_overEffort) )
+mod1<-lm(data=datafit, y ~ x)
+mod2<-lm(data=datafit,  y~-1+x+I(x^2)+ 0)
+mod2<-lm(data=datafit,  y~ poly(x,2))
+datafit$pred<-predict(object = mod2, data=datafit$x)
+points(datafit$pred ~ datafit$x, col='red')
+
 ```
 
 What is this code doing? What is stored in n_species_overEffort?
-
 
 
 Now we can answer: Is the data from iNaturalist already capturing most species in JR? Why?
@@ -175,7 +209,6 @@ Describe how to make this curve using the Jasper Ridge Data if you were to draw 
 
 
 
-
 ```{r}
 sheet_size = nrow(JR_data_quality)
 species_names = JR_data_quality$scientific_name
@@ -203,7 +236,6 @@ plot(species_abundance.rad, ylab="Number of individuals")
 ```
 
 What is this code doing? What is stored in species_abundance?
-
 
 
 The following code fits models to the data and plots it:
@@ -235,7 +267,39 @@ legend("topright",c("log normal", "broken stick", "geometric", "log series"), lt
 
 #This table helps us choose which model has the best fit
 AICtab(log_normal, broken_stick, geometric, log_series, base = TRUE)
+
 ```
+
+It looks like the log Series fits very well. We can try to estimate the true number of species thanks to the fitted parameters. Fisher log series predicts that the number of species is equal to:
+
+$$S=\frac{\alpha x ^ N}{N}$$
+
+```{r}
+alpha=coefficients(log_series)["alpha"]
+N=coefficients(log_series)["N"]
+x=N/(N-alpha)
+
+trueN=500000
+alpha* log(1+(trueN/alpha))
+```
+
+
+Also, the log Normal distribution, one can also predict the number of species based on the formula ($y_o$ is the number of species in the mode abundance bin):
+$$S = y_o \sigma \sqrt2\pi$$
+```{r}
+plot(octav(species_abundance))
+lines(octavpred(log_normal), col="blue")
+lines(octavpred(log_series), col="magenta")
+
+
+no=max(octavpred(log_normal)$Freq)
+sigma=coefficients(log_normal)["sdlog"]
+a=sqrt(1/(2*sigma^2) )
+no * sigma * (sqrt(2*pi))
+```
+
+
+
 
 Using the data from both transects, write code to create your own species abundance curve models:
 
@@ -248,11 +312,12 @@ Compare the 2 transects.
 
 Which model is a better fit?
 
+What can you conclude about it?
+
 
 # Question 4: Is there a species area curve in JR?
 
 What is required to make a species area curve? 
-
 
 
 How is the following code doing that? Describe it in detail
@@ -313,6 +378,10 @@ SAR_curve = sars::sar_power(species_area_table)
 plot(SAR_curve)
 ```
 
+```{r}
+SAR_curve
+```
+
 
 Do you think that a SAR with the transect data could give meaningful results? Why?
 
@@ -322,6 +391,10 @@ Do you think that a SAR with the transect data could give meaningful results? Wh
 If we remove a part of the area, how many species are lost? 
 
 Remove a part of the area and calculate the amount of species lost
+
+Jasper Ridge has a complex shape, but from side to side there is about 2.5Km.
+Assuming it is a circle, and that 30m are going to be cut all around it,
+calculate how much area may be lost and what may be the loss of species.
 
 ```{r}
 
