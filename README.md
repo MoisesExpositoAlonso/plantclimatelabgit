@@ -1,8 +1,9 @@
 Stanford BIO224(BIO164/EARTHSYS224)
 
-Moises Exposito-Alonso (moisesexpositoalonso@gmail.com)
+Moi Exposito-Alonso (moisesexpositoalonso@gmail.com)
 
-# Plant Ecology & Evolution in Arid Climates ("Plant Climate Lab”)
+# Plant Ecology & Evolution in Arid Climates 
+-- "Plant Climate Lab” -- 
 ------
 
 #### module1 - Plant Biodiversity
@@ -22,7 +23,8 @@ All species registered in the herbarium from Jasper Ridge over the last decades.
 
 3) Google Spreadsheet we generated
 https://docs.google.com/spreadsheets/d/1KhbNickXnH1gBP5F5XuOygm3fSbEx61fA-oCS_aeb7A/edit?usp=sharing
-Transects we constructed in Jasper Ridge. 
+
+Transects we constructed in Jasper Ridge. We can extract species coverage (proxy of abundance) of each species along the transect.
 
 #### module2 - Ecophysiology
 
