@@ -1,0 +1,329 @@
+---
+title: |
+  | Computer class Module 1: Plant Biodiversity
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: | 
+  | Moi Exposito-Alonso
+output: 
+  html_document:
+   # pdf_document:
+   #  toc: yes
+   #  latex_engine: xelatex
+fontsize: 10pt
+mainfont: Times New Roman
+indent: true
+editor_options: 
+  chunk_output_type: console
+  preview: viewer
+---
+
+
+# Downloading the data
+
+Download the Jasper Ridge Data: "JR_herbarium.csv" and "JR_observations-218315.csv"
+
+Download the Google Drive transect data as a .csv.
+
+To get both files:
+In Google Drive go to each of the tabs (redwood and grassland) and go to
+File -> Download -> Comma Separated Values (.csv). Do it for each
+
+You should now have 4 files:
+- "Module1-transects - redwood.csv"
+- "Module1-transects - grassland.csv"
+- "JR_herbarium.csv"
+- "JR_observations-218315.csv"
+
+
+Make a folder in your computer that contains all of these files and
+MODULE1_TUTORIAL.Rmd
+
+# Dependencies
+
+Set a working directory (the folder that contains the code and the data). This is so R knows where your data is
+
+Install and load packages (libraries of code) that we need for the analyses
+
+```{r load libraries}
+
+# SUBSTITUTE THIS FOR PATH TO FOLDER WITH DATA:
+# working_directory = "path/to/the/working/directory"
+# setwd(working_directory)
+
+#to install the packages used for the analysis
+# install.packages("sads")
+# install.packages("sars")
+
+#to load these same packages into R
+library(sads)
+library(sars)
+
+```
+
+# Load the data we gathered from the transects
+
+```{r load practical data}
+
+redwood_transect = read.csv("Module1-transects - transect1.csv")
+grassland_transect = read.csv("Module1-transects - transect2.csv")
+
+```
+
+# Load the data publically available
+
+This is a list of plant species recorded at Jasper Ridge (Herbarium)
+
+```{r}
+JR_herb = read.csv("JR_herbarium.csv")
+herb_species = JR_herb$Species
+
+```
+
+We downloaded all the data from iNaturalist observations at Jasper Ridge from this link:
+https://www.inaturalist.org/observations/110309697
+This data contains unique ids, a temporal footprint, use information, and species ID
+
+```{r load iNat data}
+
+JR_data = read.csv("JR_observations-218315.csv")
+JR_species = JR_data$scientific_name
+
+#These lines filter the JR data to only contain identified species of plants (from herbarium data)
+rows_with_identified_species = JR_species %in% herb_species
+JR_data_quality = subset(JR_data, rows_with_identified_species)
+```
+
+
+
+# Question 1: Is the data from iNaturalist already capturing most species in JR?
+
+Rarefaction curve. What information is needed to make this curve? 
+
+Open the iNaturalist data from Jasper Ridge. What information in this sheet do you need to make this curve?
+
+Describe how to make this curve using the Jasper Ridge Data if you were to draw it out:
+
+
+
+```{r}
+sheet_size = nrow(JR_data_quality)
+species_names = JR_data_quality$scientific_name
+unique_species_names = unique(species_names)
+num_species = length(unique_species_names)
+
+#a vector the same size as the number of species with all false entries
+species_recorded = rep(FALSE, num_species)
+#a vector the same size as the length of the iNaturalist sheet with all NA entries
+n_species_overEffort = rep(NA, sheet_size)
+
+total_speciesNum = 0
+
+#Going through the data sheet line by line to get the relevant information for the curve
+for(observation in 1:sheet_size) {
+  species_name = species_names[observation]
+  #Matches where the species_name found on the current row is on unique_species_names 
+  species_index = match(species_name,unique_species_names)
+  
+  #What does this do? What is species_recorded for?
+  if(!(species_recorded[species_index])) {
+    species_recorded[species_index] = TRUE
+    total_speciesNum = total_speciesNum + 1
+  }
+  
+  #How does this help make the curve?
+  n_species_overEffort[observation] = total_speciesNum
+}
+
+plot(n_species_overEffort, ylab="Number of Species",xlab="Effort (Number of Observations)")
+
+```
+
+What is this code doing? What is stored in n_species_overEffort?
+
+
+
+Now we can answer: Is the data from iNaturalist already capturing most species in JR? Why?
+
+
+
+# Question 2: Did we sample enough in our transect?
+
+What is different between the way that we collected data for the transect and the way that the iNaturalist data is collected? What would you say the Effort is?
+
+
+
+Write code that uses the transect data to make a rarefaction curve. Think about what has to be different considering the differences in data collection
+
+```{r}
+
+```
+
+Compare the 2 transects.
+
+Now that you've seen the rarefaction curve for the transects: Did we sample enough in our transect? Why?
+
+
+# Question 3: How different species abundance curve models fit the two ecosystems?
+
+Species Abundance Curve. What information is needed to make this curve? 
+
+
+Open the iNaturalist data from Jasper Ridge. What information in this sheet do you need to make this curve?
+
+
+Describe how to make this curve using the Jasper Ridge Data if you were to draw it out:
+
+
+
+
+```{r}
+sheet_size = nrow(JR_data_quality)
+species_names = JR_data_quality$scientific_name
+unique_species_names = unique(species_names)
+num_species = length(unique_species_names)
+
+#a vector the same size as the number of species with all 0 entries
+species_abundance = rep(0, num_species)
+
+#Going through the data sheet line by line to get the relevant information for the curve
+for(observation in 1:sheet_size) {
+  species_name = species_names[observation]
+  #Matches where the species_name found on the current row is on unique_species_names
+  species_index = match(species_name,unique_species_names)
+  
+  #How does this help make the curve?
+  species_abundance[species_index] = species_abundance[species_index] + 1
+}
+
+#Rank Abundance Distribution (rad) objects. Look at species_abundance.rad
+species_abundance.rad = rad(species_abundance)
+plot(species_abundance.rad, ylab="Number of individuals")
+
+
+```
+
+What is this code doing? What is stored in species_abundance?
+
+
+
+The following code fits models to the data and plots it:
+
+```{r}
+#fitsad fits different models to the species abundance data
+#radpred creates a rank abundance table from on the model
+
+
+log_normal = fitsad(species_abundance,"lnorm")
+log_normal.rad = radpred(log_normal)
+
+broken_stick = fitsad(species_abundance,"bs")
+broken_stick.rad = radpred(broken_stick)
+
+geometric = fitsad(species_abundance,"geom")
+geometric.rad = radpred(geometric)
+
+log_series = fitsad(species_abundance,"ls")
+log_series.rad = radpred(log_series)
+
+plot(species_abundance.rad, ylab="Number of individuals")
+lines(log_normal.rad, ylab="Number of individuals", col="blue")
+lines(broken_stick.rad, ylab="Number of individuals", col="green")
+lines(geometric.rad, ylab="Number of individuals", col="red")
+lines(log_series.rad, ylab="Number of individuals", col="magenta")
+legend("topright",c("log normal", "broken stick", "geometric", "log series"), lty=1, col=c("blue", "red", "green", "magenta"))
+
+
+#This table helps us choose which model has the best fit
+AICtab(log_normal, broken_stick, geometric, log_series, base = TRUE)
+```
+
+Using the data from both transects, write code to create your own species abundance curve models:
+
+
+```{r}
+
+```
+
+Compare the 2 transects. 
+
+Which model is a better fit?
+
+
+# Question 4: Is there a species area curve in JR?
+
+What is required to make a species area curve? 
+
+
+
+How is the following code doing that? Describe it in detail
+
+
+```{r}
+longitudes = JR_data$longitude
+latitudes = JR_data$latitude
+
+min_x = min(longitudes)
+max_x = max(longitudes)
+
+min_y = min(latitudes)
+max_y = max(latitudes)
+
+increment_fraction = 0.05
+increment_x = (max_x-min_x)*increment_fraction
+increment_y =  (max_y-min_y)*increment_fraction
+
+current_x = min_x + increment_x
+current_y = min_y + increment_y
+
+#empty vectors
+area = c()
+Species = c()
+
+current_area = 0
+num_species_in_area_range = 0
+message("Area: ",current_area,", species: ",num_species_in_area_range)
+
+while(current_x < max_x) {
+  while(current_y < max_y) {
+    
+    species_in_area_range = subset(JR_data_quality, longitude<=current_x, latitude<=current_y)
+    unique_species_in_area_range = unique(species_in_area_range$scientific_name)
+    num_species_in_area_range = length(unique_species_in_area_range)
+    Species = c(Species,num_species_in_area_range)
+    
+    area_range_x = diff(range(species_in_area_range$longitude))
+    area_range_y = diff(range(species_in_area_range$latitude))
+    
+    current_area = area_range_x * area_range_y
+    if(is.infinite(current_area)) {
+      current_area = 0
+    }
+    area<-c(area, current_area)
+    message("Area: ",current_area,", species: ",num_species_in_area_range)
+    
+    # increase the area for the next loop
+    current_x = current_x + increment_x
+    current_y = current_y + increment_y
+  }
+}
+
+species_area_table = data.frame(a=area,S=Species)
+#sar_pover creates a SAR curve
+SAR_curve = sars::sar_power(species_area_table)
+plot(SAR_curve)
+```
+
+
+Do you think that a SAR with the transect data could give meaningful results? Why?
+
+
+# Question 5: What will happen to Jasper Ridge with masticator treatment?
+
+If we remove a part of the area, how many species are lost? 
+
+Remove a part of the area and calculate the amount of species lost
+
+```{r}
+
+```
+
