@@ -117,19 +117,41 @@ JR_data_quality = subset(JR_data, rows_with_identified_species)
 
 # Question 1: Is the data from iNaturalist already capturing most species in JR?
 
+How many species are there in the Jasper Ridge iNat data?
+Identify the unique species, this is the first biodiversity metric, species richness $S$. Because species are at different abundances, we know the relative abundance is also important, and it can be accounted for with Shannon $H=\sum log(p_i) p_i$ and Simpson indexes $\lambda=\sum(_p_i)$. Margalef rarity index also scales species by the effort spent in sampling $(S-1)/log(N)$. 
+
+
+```{r}
+list_of_species=JR_data_quality$scientific_name
+abundances_of_species=as.numeric(table(list_of_species))
+relative_abundances_of_species=abundances_of_species/sum(abundances_of_species)
+total_number_observations=length(list_of_species)
+  
+# Species Richness
+S=length(unique(list_of_species))
+message("Species Richness S= ", S)
+# Shannon index
+H=-sum(relative_abundances_of_species * log(relative_abundances_of_species))
+message("Shannon Index H= ", H)
+
+# Simpson
+lambda=sum(relative_abundances_of_species^2)
+message("Simpson index labda= ", lambda)
+
+# Margalef Rarity
+Rarity=(S-1)/log(total_number_observations)
+message("Margalef rarity index= ", Rarity)
+
+```
+
+
+The number of species observed depends on your effort of samples, so often people plot the rarefaction curve.
+
 Rarefaction curve. What information is needed to make this curve? 
 
 Open the iNaturalist data from Jasper Ridge. What information in this sheet do you need to make this curve?
 
 Describe how to make this curve using the Jasper Ridge Data if you were to draw it out:
-
-
-```{r}
-# The unique number of species names
-length(unique(JR_data_quality$scientific_name))
-
-```
-
 
 
 ```{r}
@@ -323,7 +345,7 @@ What is required to make a species area curve?
 How is the following code doing that? Describe it in detail
 
 
-```{r}
+```{r, warning=FALSE}
 longitudes = JR_data$longitude
 latitudes = JR_data$latitude
 
@@ -388,13 +410,18 @@ Do you think that a SAR with the transect data could give meaningful results? Wh
 
 # Question 5: What will happen to Jasper Ridge with masticator treatment?
 
-If we remove a part of the area, how many species are lost? 
+The Species Area Relationship has been used to predict the loss of species by area loss.Rearranging the SAR for present and future areas, we can get the fraction of species extinct as
+$$ 1- \frac{SAR_{fut}}{SAR_{now}} = 1-(1- \frac{A_{fut}}{A_{now}})^z $$
 
-Remove a part of the area and calculate the amount of species lost
+
+If we remove a part of the area, how many species are lost? 
 
 Jasper Ridge has a complex shape, but from side to side there is about 2.5Km.
 Assuming it is a circle, and that 30m are going to be cut all around it,
 calculate how much area may be lost and what may be the loss of species.
+
+
+Then calculate
 
 ```{r}
 
