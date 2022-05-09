@@ -28,6 +28,25 @@ Transects we constructed in Jasper Ridge. We can extract species coverage (proxy
 
 #### module2 - Ecophysiology
 
+Our aim in module 2 is to learn about the leaf economic spectrum and theories of plant strategies and community asembly.
+
+Several datasets available to analyze are
+
+1) Our Google Spreadsheet with leaf traits and other traits
+Leaf traits
+https://docs.google.com/spreadsheets/d/1eMJt2Tv-KLKORX2jOT8uhuhdchrMEo02pYtn1zxuzDA/edit?usp=sharing
+Additional traits
+https://docs.google.com/spreadsheets/d/1_A6K7PmIRX0ZXnnT4RPthZeC_LT4xO_qRruTbJLr2Ac/edit?usp=sharing
+
+2) the GBIF.org plant species observations from California
+GBIF.org (23 April 2021) GBIF Occurrence Download  https://doi.org/10.15468/dl.v3evdw
+
+3) The Pierce dataset from the original CSR mapping publication with several thousand plant species
+Pierce.csv
+
+4) The Estarague dataset of within Arabidopsis thaliana variation in leaf traits
+Estarague.csv
+
 
 #### module3 - Genetic adaptation to cliamte
 
