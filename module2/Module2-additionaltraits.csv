@@ -1,6 +1,31 @@
-species binomial             ,family ,notes,height
-Yucca brevifolia,Asparagaceae,,
-Quercus agrifolia,Fagaceae,,11.7
-Sequoia sempervierns,Cupresaceae,,24.8
-Sequoiadendrum giganteum,Cupresaceae,,27.3
-Polystichum munitum,?,,0.7
+species binomial             ,family ,notes,height (cm)
+Yucca brevifolia,Asparagaceae,mean of 3,436.2
+Quercus agrifolia,Fagaceae,,1170.0
+Sequoia sempervierns,Cupressaceae,,2480
+Sequoiadendrum giganteum,Cupressaceae,,2730
+Polystichum munitum,?,,70
+Eephedra sp,,,90
+Juniperus californica,Cupressaceae,,244
+Ambrosia acanthicarpa,,mean,12.06666667
+Malacothrix glabrata,,mean,17
+Phacelia distans,,mean,22
+Salvia columbariae,Lamiaceae,mean,15
+Chilopsis linearis,,,217
+Chaenactis fremontii,,,22
+Chylismia claviformis,Onagraceae,,17
+Sphaeralcea ambigua var. ambigua,,,58
+Crypthanta circumscissa,,,45
+Eriastrum eremicum,,,9
+Buttercup,,mean,6.733333333
+Descuriana pinnata,Brassicaceae,mean,47
+Poa bulbosa,,,
+Phoradendron leucarpum,Viscaceae,,78
+Pinus ponderosa,Pinaceae,mean of 2,1407
+Calocedrus decurrens,Cupersecea ,mean,1120.08
+Undentified Rosette,Asteraceae/apiaceae (?),mean,4.533333333
+Sequioadendron giganteum,Cupressaceae,,1667
+Phoradendron bolleanum,Viscaceae,mean,61
+Larrea tridentata,Zygophyllaceae,,284.0
+Bromus tectorum,,mean,25.01666667
+Ericameria nauseosa,,mean,131.8
+Fouquieria splendens,,mean,555.35
