@@ -46,6 +46,10 @@ https://docs.google.com/spreadsheets/d/1_A6K7PmIRX0ZXnnT4RPthZeC_LT4xO_qRruTbJLr
 Once finished
 File -> Download -> Comma Separated Values (.csv). 
 
+The folder with pictures for image analysis are below, download them too
+https://drive.google.com/drive/folders/1ZL7x13TRmVZ-U8y1wWSgMi-w2HbSC-oH?usp=sharing
+
+
 # Consolidate data
 
 Now you should have the next files:
@@ -114,13 +118,16 @@ mergedtraits<-
 # Load the data publically available
 
 All the plants from California from GBIF.org
+Download from
+https://drive.google.com/file/d/1Z8lCLRoN9wdbKVpzOAJH3fkK39abPdFx/view?usp=sharing
+
 
 ```{r}
 # calplants = read.csv("observations-226188.csv")
 calplants = read.csv("GBIF_California.csv",sep = '\t')
 # calplants = read.csv("../plantclimatelabgit/module1/")
 head(calplants)
-calplantsclim = read.csv("GBIF_California_clim.csv",sep = '\t')
+calplantsclim = read.csv("GBIF_California_clim.csv",sep = ',')
 
 ```
 

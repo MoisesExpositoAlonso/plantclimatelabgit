@@ -48,7 +48,7 @@ Pierce.csv
 Estarague.csv
 
 
-#### module3 - Genetic adaptation to cliamte
+#### module3 - Genetic adaptation to climate
 
 
 
