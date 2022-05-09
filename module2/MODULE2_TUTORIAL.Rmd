@@ -1,0 +1,315 @@
+---
+title: |
+  | Computer class Module 2: Ecophysiology
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: | 
+  | Moi Exposito-Alonso
+output: 
+  html_document:
+   # pdf_document:
+   #  toc: yes
+   #  latex_engine: xelatex
+fontsize: 10pt
+mainfont: Times New Roman
+indent: true
+editor_options: 
+  chunk_output_type: console
+  preview: viewer
+---
+
+
+# Downloading the data
+
+Download the repository containing this file and data with the command below or simply go to the website and download it directly: https://github.com/MoisesExpositoAlonso/plantclimatelabgit .
+
+```{bash, eval=FALSE}
+# SUBSTITUTE THE PATH BELOW FOR YOUR WORKING DIRECTORY
+git clone https://github.com/MoisesExpositoAlonso/plantclimatelabgit path/to/the/working/directory
+```
+
+Because we already worked with this repository, if you have git installed you can also get the latest using "git pull" command.
+
+
+```{bash, eval=FALSE}
+# SUBSTITUTE THE PATH BELOW FOR YOUR WORKING DIRECTORY
+git pull https://github.com/MoisesExpositoAlonso/plantclimatelabgit path/to/the/working/directory
+```
+
+# Log your data from the field trip
+
+For reference, the data we gathered is herre:
+Leaf traits
+https://docs.google.com/spreadsheets/d/1eMJt2Tv-KLKORX2jOT8uhuhdchrMEo02pYtn1zxuzDA/edit?usp=sharing
+Additional traits
+https://docs.google.com/spreadsheets/d/1_A6K7PmIRX0ZXnnT4RPthZeC_LT4xO_qRruTbJLr2Ac/edit?usp=sharing
+
+Once finished
+File -> Download -> Comma Separated Values (.csv). 
+
+# Consolidate data
+
+Now you should have the next files:
+- "Module2-leaftraits.csv"
+- "Module2-additionaltraits.csv"
+In addition, there are other published datasets
+- "Pierce.csv"
+- "Estarage.csv"
+- "GBIF_California"
+
+The folder also contains THIS template called "MODULE2_TUTORIAL.Rmd", which you can use to do the exercises of this practical.
+
+Finally, a subfolder "leaf_area_pictures" contains the pictures that we took for leaf areas
+
+# Dependencies
+
+The exercises in this practical requires an R packages for Ternary plots (Ternary) and a package to manipulate climate (raster, I already used this to clean some data, so no worries if it does not install).
+
+First set a working directory (the folder that contains the code and the data). This is so R knows where your data is
+
+Install and load packages (libraries of code) that we need for the analyses
+
+```{r load libraries, warning=FALSE}
+
+# SUBSTITUTE THIS FOR PATH TO FOLDER WITH DATA:
+# working_directory = "path/to/the/working/directory"
+# setwd(working_directory)
+
+#to install the packages used for the analysis
+# install.packages("raster")
+# install.packages("Ternary")
+
+#to load these same packages into R
+library(Ternary)
+library(raster)
+
+```
+
+# Load the data we gathered from the trip
+
+We quantified data ourselves. The spreadsheet has as input of three traits that are used to quantify composits:
+
+LA leaf area (mm2) [single-sided leaf area with petiole]
+LFW leaf fresh weight (mg) [saturated, turgid fresh weight]
+LDW leaf dry weight (mg)  [after oven drying to constant weight]	LSI leaf succulence index (g water dm-2)
+LWC leaf water content (% of fresh weight)
+LMA leaf mass per area (g m-2)
+LA leaf area (mm2)
+LDMC leaf dry matter content (%)
+SLA specific leaf area (mm2 mg-1)
+
+```{r load practical data}
+
+leaftraits = read.csv("Module2-leaftraits.csv",header = T)
+leaftraits$species.binomial
+othertraits = read.csv("Module2-additionaltraits.csv",header = T)
+othertraits$species.binomial
+
+mergedtraits<-
+  merge(leaftraits, 
+        othertraits,
+        by='species.binomial')
+```
+
+
+# Load the data publically available
+
+All the plants from California from GBIF.org
+
+```{r}
+# calplants = read.csv("observations-226188.csv")
+calplants = read.csv("GBIF_California.csv",sep = '\t')
+# calplants = read.csv("../plantclimatelabgit/module1/")
+head(calplants)
+calplantsclim = read.csv("GBIF_California_clim.csv",sep = '\t')
+
+```
+
+
+The Pierce method comes with an example dataset (https://besjournals-onlinelibrary-wiley-com.stanford.idm.oclc.org/doi/10.1111/1365-2435.12722
+)
+
+You can seem more public species traits here:
+http://www.try-db.org/TryWeb/Data.php
+
+
+```{r load TRY data}
+try = read.csv("Pierce.csv",header = T,fill = T)
+head(try)
+```
+
+Estarague (http://dx.doi.org/10.1093/aob/mcab149) applied the CSR to leaf traits
+of the Arabidopsis thaliana model plant.
+
+
+```{r load Ara data}
+esta = read.csv("Estarague.csv",header = T,fill = T)
+head(esta)
+```
+
+
+# Question 1: Plotting the global CSR. Where are the different ecosystems of california?
+
+The CSR is a complicated plot, for that we have a package Ternary that makes these
+ternary plots. Here is an example with all the plants in the Pierce example spreadsheet. 
+You can color the dots to ask whether different habitats have different CSRs.
+
+```{r}
+# install.packages("Ternary")
+library(Ternary)
+
+TernaryPlot(atip = "C",
+            btip = "S",
+            ctip = "R"
+)
+TernaryPoints(try[, c("C....", "S....", "R....")],
+              pch = 16 
+              )
+
+```
+
+# Question 2: What are the main axis of leaf variation in our dataset?
+
+We quantified several leaf traits today and over the last weeks.
+Three traits can be visualized in a 3d plot, but often we want to visualize these
+using a Principal Component Analysis. This analysis tries to transform your traits
+into new traits which are sorted by how much variation they explain.
+
+
+Using Leaf area, Leaf dry mass per leaf fresh mass, Specific leaf area (leaf area per dry mass), 
+and height, what do you see
+
+```{r}
+# Do not run next lines, just mock data to test code
+testcode=T
+if(testcode){
+  mergedtraits$LA<-rnorm(nrow(mergedtraits))
+  mergedtraits$LDMC<-rnorm(nrow(mergedtraits))
+  mergedtraits$LMA<-rnorm(nrow(mergedtraits))
+  mergedtraits$C..............<-rnorm(nrow(mergedtraits))
+  mergedtraits$S....<-rnorm(nrow(mergedtraits))
+  mergedtraits$R..............<-rnorm(nrow(mergedtraits))
+}
+
+```
+
+```{r}
+# Subset table for traits
+topca<-mergedtraits[,c("LA","LDMC","LMA","height")]
+topca<-na.omit(topca)
+
+# run PCA
+pca<-prcomp(topca,scale=T)
+plot(pca$x)
+```
+
+# Question 3: Where are our species in the CSR scale? Is there any relationship between CSR and location of origin?
+
+From the spreadsheet we have generated, you can plot a ternary plot using
+the same techniques as above. You can also check how the plants in our trip
+compare to the global spectrum. 
+
+To do this, you will have to only use the averages per species. 
+
+
+```{r}
+# Select the average row
+# tocsr<-subset(mergedtraits,notes.x=="Mean" ) # do not run
+tocsr<-mergedtraits
+# Subset table for traits
+tocsr<-tocsr[,c( "C..............","S.............." ,"R.............." )]
+tocsr<-apply(tocsr,2,as.numeric)
+tocsr<-na.omit(tocsr)
+# Plot
+TernaryPlot(atip = "C",
+            btip = "S",
+            ctip = "R"
+)
+TernaryPoints(tocsr,
+              pch = 16 
+              )
+
+```
+
+# Question 4: Is there intra-species variation in the CSR? how big?
+
+In our trip we observed that some individuals varied in leaves, both within
+and between individuals. It may be interesting so see what is the magnitude of this difference
+
+```{r}
+hist(as.numeric(esta$LA),xlab="Leaf area [LA]",main="")
+
+```
+
+
+```{r}
+TernaryPlot(atip = "C",
+            btip = "S",
+            ctip = "R"
+)
+tocsr<-esta[,c("C","S","R")]
+tocsr<-na.omit(tocsr)
+TernaryPoints(tocsr,
+              pch = 16 
+              )
+```
+
+# Question 5: Is there any relationship between CSR and climate?
+
+GBIF_California_clim.csv contains the bioclimatic variables for all the GPS locations 
+Estarague.csv already also contains the locations of Arabidopsis ecotypes with the climate extracted
+
+Some more information about the climate
+https://github.com/MoisesExpositoAlonso/rbioclim
+```{r}
+# you can do a correlation, fill in this
+```
+
+# Question 6: Can simple recurrent equations lead to CSR coexistence?
+
+Go to the module lecture slides
+https://docs.google.com/presentation/d/1mAV-e8GAncHZ3Joz7yRdhUlK0IKUsxF2gsWLFAH0VJc/edit?usp=sharing
+
+And try to recode the equations from slides 14. Some tips below on how to start thinking about this.
+Just assume 2 species with abundance N1 and N2 for simplicity
+And 2 resources R1 R2
+Write recursive functions
+Give example starting parameters and run the simulation.
+
+What conditions lead to one species to win?
+What conditions lead to coexistence?
+What combination of parameters you have to choose?
+
+```{r}
+N1<-10
+N2<-10
+f1<-function(Ri){}
+f2<-function(Ri){}
+m1<-0.2
+m2<-0.3
+R1<-1
+R2<-1
+a1<-0.5
+S1<-function(){N1*0.5}
+S2<-function(){N2*0.8}
+alpha<-0.2
+
+dndt<-function(Ni,fi,R1,R2,mi,alpha){
+  # write the equation here
+}
+drdt<-function(Ri,ai,N1,N2,f1,f2){
+  # write the equation here
+}
+
+generations=50
+recordN1<-c()
+recordN2<-c()
+for(i in 1:generations){
+  N1<-dndt(N1,f1,R1,R2,m1,alpha)+N1
+  N2<-dndt(N2,f2,R1,R2,m2,alpha)+N1
+  R1<-drdt(R1,a1,N1,N2,f1,f2)+R1
+  R2<-drdt(R2,a2,N1,N2,f1,f2)+R2
+  recordN1<-append(recordN1,N1)
+  recordN2<-append(recordN2,N2)
+}
+```
+
