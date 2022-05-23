@@ -1,0 +1,307 @@
+---
+title: |
+  | Computer class Module 3: Evolutionary genetics
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+author: | 
+  | Moi Exposito-Alonso
+output: 
+  html_document:
+   # pdf_document:
+   #  toc: yes
+   #  latex_engine: xelatex
+fontsize: 10pt
+mainfont: Times New Roman
+indent: true
+editor_options: 
+  chunk_output_type: console
+  preview: viewer
+---
+
+# Libraries that may be needed
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+# Downloading the data
+
+Download the repository containing this file and data with the command below or simply go to the website and download it directly: https://github.com/MoisesExpositoAlonso/plantclimatelabgit .
+
+```{bash, eval=FALSE}
+# SUBSTITUTE THE PATH BELOW FOR YOUR WORKING DIRECTORY
+git clone https://github.com/MoisesExpositoAlonso/plantclimatelabgit path/to/the/working/directory
+```
+
+Because we already worked with this repository, if you have git installed you can also get the latest using "git pull" command.
+
+
+```{bash, eval=FALSE}
+# SUBSTITUTE THE PATH BELOW FOR YOUR WORKING DIRECTORY
+git pull https://github.com/MoisesExpositoAlonso/plantclimatelabgit path/to/the/working/directory
+```
+
+
+# NOTES / IDEAS
+* Phenotype atlas
+* Small Arabidopsis 1001 genomes subset
+* 
+
+QUESTION 1: What is the minimum size of a population for adaptation to be efficient?
+
+```{r}
+mu=0.01
+nu=0
+m=0
+wAA=1
+wAa=0.75
+waa=0.5
+Fi=0
+p0=0.5
+psource=0.1
+tmax=100
+d=0
+N=1000
+rep=50
+
+# Simulate a Wright Fisher population
+p <- c()
+p[1] <- p0
+
+  for (t in 1:(tmax-1)) {
+    # mutation first
+    pp <- (1-mu)*p[t] + (1-p[t])*nu
+
+    # next, migration
+    ppp <- (1-m)*pp + m*psource
+
+    # then selection
+    w_hat=( wAA*ppp^2 + wAa*2*ppp*(1-ppp) + waa*(1-ppp)^2 )
+    # print(w_hat)
+    if ( w_hat > 0 & !is.na(w_hat) ) {
+      p[t+1] <- ( wAA*ppp^2 + wAa*ppp*(1-ppp) ) / w_hat
+    } else {
+      p[t+1] <- NA
+    }
+    # then imbreeding (this equation is general)
+    fAA <- (p[t+1]^2 * (1-Fi)) + p[t+1]*Fi
+    fAa <- 2*p[t+1]*(1-p[t+1]) * (1-Fi)
+    faa <- (1-p[t+1])^2 * (1-Fi) + (1-p[t+1])* Fi
+    # no imbreeding
+    # fAA <- p[t+1]^2
+    # fAa <- 2*p[t+1]*(1-p[t+1])
+    # faa <- (1-p[t+1])^2
+
+    # then drift
+    NAA <- round(N*fAA)
+    NAa <- round(N*fAa)
+    Naa <- round(N*faa)
+
+    p[t+1] <- (NAA + 0.5*NAa) / (NAA+NAa+Naa)
+
+} #end t loop
+plot(p, ylab='Allele frequency', xlab='Generations', pch=16)
+
+```
+
+QUESTION 2: Are population frequencies changing in one generation of common garden?
+
+In our class, we sequenced three samples of 100 flowers or fruits from the
+common garden experiment.
+
+There were three sections, a high frequency of rainfall, intermediate, and low.
+
+For convenience, we are not processing directly the raw data, which is a bit
+more involved in the computer server. Instead we can see the raw data
+and then use the processed analyses.
+
+We used the next two softwares to clean the data:
+https://github.com/moiexpositoalonsolab/grenepipe/wiki
+https://github.com/lczech/grenedalf/wiki/
+
+Sample order is
+daily rep 1
+daily rep 2
+weekly rep 1
+weekly rep 2
+monthly rep 1
+monthly rep 2
+
+```{r}
+# Load the FST among all samples we sequenced
+fst<-read.table("fst-bio224-width-1k.csv",header = T)
+head(fst)
+tail(fst)
+
+# Remove chloroplast and mitochondria
+fst<-dplyr::filter(fst, CHROM != 'chloroplast', CHROM!='mitochondria')
+
+# Select only columns of sample comparisons, and remove missing data
+fstsamples<-dplyr::select(fst,starts_with("X"))
+fstsamples<-na.omit(fstsamples)
+
+# Treatments of rainfall of the 6 samples
+treatments<-c("d","d","w","w","m","m")
+samples<-1:6
+parsedcomp<-colnames(fstsamples)
+parsedcomp<-gsub(parsedcomp, pattern = "X",replacement = "")
+parsedcomp_a<-as.numeric(substr(parsedcomp,start = 1,stop = 1))
+parsedcomp_b<-as.numeric(substr(parsedcomp,start = 3,stop = 3))
+
+# Parse the columns in the 
+fstpca<-prcomp(t(fstsamples))
+plot(fstpca$sdev^2/sum(fstpca$sdev^2),ylab='% var explained' , xlab='PC')
+
+toplot<-data.frame(fstpca$x)
+toplot$mycolors<-paste(treatments[parsedcomp_a],treatments[parsedcomp_b])
+ggplot(toplot) +
+  # geom_point(aes(x=PC1,y=PC2, color=mycolors))
+  geom_point(aes(x=PC1,y=PC2, color=parsedcomp))
+
+```
+
+Another dataset available is a higher coverage sequencing data also of flowers 
+before and after natural selection happened
+
+There are 12 samples, 4 timepoints, 3 replicates.
+Check the source paper for details
+https://drive.google.com/file/d/1ORmgBXiO3XP83sff9vAgqTCT7NwLYJo7/view?usp=sharing
+
+```{r}
+sampletimes<-c(0,0,0,1,1,1,2,2,2,3,3,3)
+samplesreps<-c(1,2,3,1,2,3,1,2,3,1,2,3)
+
+fst3<-read.table("fst-width-10k.csv",header = T)
+
+ggplot(fst3)+
+  geom_point(aes(y=S1.S4 ,x=START))+
+  facet_wrap(ncol=1, ~CHROM)
+
+```
+
+If you identify any interesting region, get the chromosome
+number, and the physical position in the genome, and 
+cross-check with the next file that contains gene names and positions.
+You can then find the function of any gene in this website:
+https://www.arabidopsis.org/
+
+```{r}
+genes<-read.table("TAIR10_GFF3_genes_transposons.gff")
+head(genes)
+
+```
+
+QUESTION 3: How are populations of a species connected with each other?
+
+How is genetic diversity organized in space (maybe visualize with PCA?)
+This may recapitulate previous papers
+https://drive.google.com/file/d/149CDl6Pwvsj5IQQ-U6RNgdpWHIy6s9wi/view?usp=sharing
+
+```{r}
+fam<-read.table("515g.fam")
+populationnames<-read.csv("Exposito-Alonso_2018.csv")
+fammerged<-merge(fam,populationnames,by.x="V1",by.y='id',all.x=T)
+
+g<-read.table("515top1000.012", header=T)
+pca<-prcomp(g,scale. = T)
+toplot<-data.frame(pca$x)
+
+toplot$populations<-fammerged$Group
+
+ggplot(toplot)+
+  geom_point(aes(y=PC2,x=PC1,color=populations))
+
+```
+
+
+Are there potentially close populations genetically that are far apart geographically? 
+Is there a Species Area Relationship for mutations?
+
+You can use the latitude and longitude from the Exposito-Alonso_2018.csv 
+dataset, and calculate distances using "dist" function
+```{r}
+
+```
+
+
+
+QUESTION 4: How much of a trait we can predict from genetics?
+
+We already studied the CSR phenotypes of Arabidopsis. There are larger common
+gardens of Arabidopsis with lots of repicates that can help us estimate
+how much environment and how much genotype influences genotypes.
+
+https://drive.google.com/file/d/1efCbiYJp0Lvt8hN7H4EXYJWvjNJrGxTA/view?usp=sharing
+
+We can use two traits, flowering time, and survival. 
+
+```{r}
+d1<-read.csv("Exposito-Alonso_2018.csv",fill = T)
+d2<-read.csv("Estarague.csv")
+d3<-read.csv("Exposito-Alonso_2019.csv")
+d3<-read.csv("Exposito-Alonso_2019_replicates.csv")
+head(d1)
+head(d2)
+head(d3)
+
+```
+
+Could you also check whether certain traits from CSR correlate
+with survival or fitness in different environments?
+
+```{r}
+# Tip, you can merge datasets using merge and specifying a shared column
+# merged<-merge(d1,d2, by='id')
+
+```
+
+Let's select on environment in the 2019 common garden, you can use subset
+
+Then calculate how much variation there is between replicates and within replicates.
+A formal way to do this is using anova(lm(Trait ~ genotype)) function
+
+```{r}
+subset<-dplyr::filter(d3, site=='madrid', water=='l', indpop=='p') %>%
+  head(1000) # just to take the first 1K observations
+# plot ditributions of flowering
+ggplot(subset)+
+  geom_density(aes(x=Flowering_time, group=factor(id),fill=factor(id)))+
+  theme(legend.position = "none")
+
+```
+
+Example calculation of heritability using ANOVA with simulated data
+```{r}
+#
+res.lm <- lm(Flowering_time~id,data=subset)
+res.anova<-anova(res.lm)  
+# extract differences between groups, and total differences, and make ratio
+heritability= res.anova$`Mean Sq`[1] / (res.anova$`Mean Sq`[1]+res.anova$`Mean Sq`[2] )
+heritability
+
+```
+
+We can categorize genotypes based on their own alleles so we can also conduct
+associations or ANOVA for each of the alleles.
+
+This example is  with the Estarague data
+
+```{r}
+# Get the genotype matrix with the ID column
+genotype<-data.frame(fam$V1,g)
+# Merge with the Estarague genotypes
+mgwa<-merge(genotype, d2,by.x="fam.V1",by.y="id")
+
+# Visualize the classic plot of 2 genotypes and their traits
+plot(y=mgwa$S, x=mgwa$._A, xlab="Genotype at first SNP", ylab="S score of plants",
+     col='red', pch=16)
+
+```
+
+Now you could even do this for all SNPs in the dataset, and see
+if any variant is associated
+
+```{r}
+# Tip, you can do this for all SNPs, so you can construct a for loop
+
+```
