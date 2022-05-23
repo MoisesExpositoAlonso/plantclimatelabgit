@@ -8,14 +8,18 @@ Moi Exposito-Alonso (moisesexpositoalonso@gmail.com)
 
 #### module1 - Plant Biodiversity
 
-Our aim is to learn how to quantify biodiversity with field observations, contrast
-hypotheses and validating them with publically available datasets, and make predictions.
+Our aim is to learn how to quantify biodiversity with field observations, 
+contrast hypotheses and validating them with publically available datasets, 
+and make predictions.
 
-The datasets available at our reach include a list of all species from Jasper Ridge, vegetation map, and template of R markdown for biodiversity analyses. 
+The datasets available at our reach include a list of all species from Jasper 
+Ridge, vegetation map, and template of R markdown for biodiversity analyses. 
 
 1) JR_observations-218315.csv
 
-All iNaturalist observations in Jasper Ridge. This is a citizen science dataset of species observed in Jasper Ridge using the iNaturalist.org platform.  This includes a picture, geographic position, and tentative name given by citizen naturalists.
+All iNaturalist observations in Jasper Ridge. This is a citizen science dataset
+of species observed in Jasper Ridge using the iNaturalist.org platform. This 
+includes a picture, geographic position, and tentative name given by citizen naturalists.
 
 2) JR_herbarium.csv
 
@@ -24,11 +28,13 @@ All species registered in the herbarium from Jasper Ridge over the last decades.
 3) Google Spreadsheet we generated
 https://docs.google.com/spreadsheets/d/1KhbNickXnH1gBP5F5XuOygm3fSbEx61fA-oCS_aeb7A/edit?usp=sharing
 
-Transects we constructed in Jasper Ridge. We can extract species coverage (proxy of abundance) of each species along the transect.
+Transects we constructed in Jasper Ridge. We can extract species coverage (proxy
+of abundance) of each species along the transect.
 
 #### module2 - Ecophysiology
 
-Our aim in module 2 is to learn about the leaf economic spectrum and theories of plant strategies and community asembly.
+Our aim in module 2 is to learn about the leaf economic spectrum and theories of 
+plant strategies and community asembly.
 
 Several datasets available to analyze are
 
@@ -50,6 +56,19 @@ Estarague.csv
 
 #### module3 - Genetic adaptation to climate
 
+The aim in the final module of this course is to study the origin of species
+diversity and trait variation through an evolutionary lense. here we will 
+study variation across individuals of the same species, using Arabidopsis
+thaliana as the model species.
 
+We have several datasets available:
 
+1) Our own sequencing of Arabidopsis populations grown in different precipitation
+patterns. These started from the same pool of genotypes, and studying allele
+frequency differences may tell us about genotypes that survied in different
+environments. As a backup there is also 
 
+2) The 1001 Arabidopsis thaliana genomes. This contains entire genome variation data for 500 Arabidopsis populations and their GPS locations.
+
+3) Common garden traits from the 515 Arabidopsis ecotypes. These partially overlap with the leaf traits
+we analyzed in Module 2 from Estarague.
